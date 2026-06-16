@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MainKun Java World</title>
 
 <style>
+
 body{
     margin:0;
     font-family:sans-serif;
@@ -61,6 +63,8 @@ h1{
     padding:15px;
     font-family:monospace;
     margin-top:10px;
+    width:100%;
+    box-sizing:border-box;
 }
 
 button{
@@ -91,16 +95,21 @@ button{
     text-align:center;
     background:#fffdf5;
 }
+
 </style>
+
 </head>
 
 <body>
 
 <header>
+
     <h1>mainくん Java World</h1>
+
     <div class="subtitle">
         mainくんたちと、Javaの世界をぼうけんしよう！
     </div>
+
 </header>
 
 <div class="container">
@@ -108,28 +117,34 @@ button{
     <div class="main-area">
 
         <div class="left-panel">
+
             <h2>こんにちは！</h2>
 
             <p>ぼくは mainくん！</p>
             <p>ここは Java の世界。</p>
             <p>わからなくても大丈夫。</p>
             <p>いっしょにゆっくり学んでいこう！</p>
+
         </div>
 
         <div class="right-panel">
+
             <h2>はじめてのことば</h2>
 
-            <div class="code-box">
-System.out.println("こんにちは");
-            </div>
+            <textarea id="codeInput"
+                      class="code-box"
+                      rows="4">System.out.println("こんにちは");</textarea>
 
-            <button>Javaさんに伝える（実行）</button>
+            <button onclick="runJava()">
+                Javaさんに伝える（実行）
+            </button>
 
             <h3>Javaさんからの返事</h3>
 
-            <div class="code-box">
-こんにちは
+            <div id="result" class="code-box">
+                こんにちは
             </div>
+
         </div>
 
     </div>
@@ -166,5 +181,36 @@ System.out.println("こんにちは");
 
 </div>
 
+<script>
+
+function runJava() {
+
+    const code =
+        document.getElementById("codeInput").value;
+
+    const result =
+        document.getElementById("result");
+
+    if(code.includes("こんにちは")) {
+
+        result.innerHTML = "こんにちは";
+
+    }
+    else if(code.includes("mainくん")) {
+
+        result.innerHTML = "やあ！ぼくはmainくん！";
+
+    }
+    else {
+
+        result.innerHTML =
+            "Javaさん「まだその言葉はわからないよ」";
+
+    }
+}
+
+</script>
+
 </body>
+
 </html>
