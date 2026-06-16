@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 
 <head>
@@ -104,78 +103,89 @@ button{
 <body>
 
 <header>
-    <h1>mainくん Java World</h1>
-    <div class="subtitle">
-        mainくんたちと、Javaの世界をぼうけんしよう！
-    </div>
+
+<h1>mainくん Java World</h1>
+
+<div class="subtitle">
+mainくんたちと、Javaの世界をぼうけんしよう！
+</div>
+
 </header>
 
 <div class="container">
 
-```
 <div class="main-area">
 
-    <div class="left-panel">
-        <h2>こんにちは！</h2>
+<div class="left-panel">
 
-        <p>ぼくは mainくん！</p>
-        <p>ここは Java の世界。</p>
-        <p>わからなくても大丈夫。</p>
-        <p>いっしょにゆっくり学んでいこう！</p>
-    </div>
+<div id="mainMessage">
 
-    <div class="right-panel">
+<h2>こんにちは！</h2>
 
-        <h2>はじめてのことば</h2>
+<p>ぼくは mainくん！</p>
 
-        <textarea id="codeInput"
-                  class="code-box"
-                  rows="4">System.out.println("こんにちは");</textarea>
+<p>ここは Java の世界。</p>
 
-        <button onclick="runJava()">
-            Javaさんに伝える（実行）
-        </button>
+<p>わからなくても大丈夫。</p>
 
-        <h3>Javaさんからの返事</h3>
+<p>いっしょにゆっくり学んでいこう！</p>
 
-        <div id="result" class="code-box">
-            こんにちは
-        </div>
+</div>
 
-    </div>
+</div>
+
+<div class="right-panel">
+
+<h2>はじめてのことば</h2>
+
+<textarea
+id="codeInput"
+class="code-box"
+rows="4">System.out.println("こんにちは");</textarea>
+
+<button onclick="runJava()">
+Javaさんに伝える（実行）
+</button>
+
+<h3>Javaさんからの返事</h3>
+
+<div id="result" class="code-box">
+こんにちは
+</div>
+
+</div>
 
 </div>
 
 <div class="map-area">
 
-    <h2>Javaの世界マップ</h2>
+<h2>Javaの世界マップ</h2>
 
-    <div class="map-list">
+<div class="map-list">
 
-        <div class="place">
-            <h3>main村</h3>
-            <p>Javaさんに話しかけよう！</p>
-        </div>
+<div class="place">
+<h3>main村</h3>
+<p>Javaさんに話しかけよう！</p>
+</div>
 
-        <div class="place">
-            <h3>データ型の浜辺</h3>
-            <p>データ型のなかまたちに会おう！</p>
-        </div>
+<div class="place">
+<h3>データ型の浜辺</h3>
+<p>データ型のなかまたちに会おう！</p>
+</div>
 
-        <div class="place">
-            <h3>ifのパン屋さん</h3>
-            <p>条件分岐を学ぼう！</p>
-        </div>
+<div class="place">
+<h3>ifのパン屋さん</h3>
+<p>条件分岐を学ぼう！</p>
+</div>
 
-        <div class="place">
-            <h3>switch寿司</h3>
-            <p>switch文を学ぼう！</p>
-        </div>
-
-    </div>
+<div class="place">
+<h3>switch寿司</h3>
+<p>switch文を学ぼう！</p>
+</div>
 
 </div>
-```
+
+</div>
 
 </div>
 
@@ -189,18 +199,58 @@ function runJava() {
     const result =
         document.getElementById("result");
 
+    const mainMessage =
+        document.getElementById("mainMessage");
+
     const match =
-        code.match(/System\.out\.println\("(.+)"\);/);
+        code.match(/System\.out\.println\("([^"]*)"\);/);
 
     if (match) {
 
-        result.innerHTML = match[1];
+        const text = match[1];
+
+        result.innerHTML = text;
+
+        mainMessage.innerHTML = `
+            <h2>こんにちは！</h2>
+
+            <p>ぼくは mainくん！</p>
+
+            <p>Javaさんが君の文章を読んで、</p>
+
+            <p>「${text}」</p>
+
+            <p>を返してくれたよ！</p>
+
+            <p>" " の中に書いた言葉が表示されるんだ。</p>
+
+            <p>いろいろ試してみよう！</p>
+        `;
 
     } else {
 
-        result.innerHTML =
-            'Javaさん「System.out.println("..."); の形で書いてみよう」';
+        result.innerHTML = `
+            Error: Invalid statement.<br>
+            Expected: System.out.println("text");
+        `;
 
+        mainMessage.innerHTML = `
+            <h2>こんにちは！</h2>
+
+            <p>ぼくは mainくん！</p>
+
+            <p>びっくりしたかな？</p>
+
+            <p>Javaさんは怒っているんじゃないんだ。</p>
+
+            <p>知らない文が来て困っているんだよ。</p>
+
+            <p>まずは</p>
+
+            <p>System.out.println("こんにちは");</p>
+
+            <p>の形で書いてみよう！</p>
+        `;
     }
 }
 
