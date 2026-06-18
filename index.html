@@ -1,4 +1,198 @@
-function runJava() {
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mainくん Java World</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:sans-serif;
+    background:#f5f5f5;
+}
+
+header{
+    background:#87ceeb;
+    padding:20px;
+}
+
+h1{
+    margin:0;
+    color:#5a3a1a;
+}
+
+.subtitle{
+    font-size:20px;
+    margin-top:10px;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+}
+
+.main-area{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.left-panel,
+.right-panel{
+    flex:1;
+    min-width:300px;
+    background:white;
+    padding:20px;
+    border-radius:15px;
+}
+
+textarea{
+    width:100%;
+    box-sizing:border-box;
+    padding:15px;
+    font-family:monospace;
+}
+
+button{
+    margin-top:15px;
+    padding:12px 24px;
+    font-size:18px;
+    cursor:pointer;
+}
+
+.code-box{
+    margin-top:10px;
+    padding:15px;
+    border-radius:15px;
+    min-height:60px;
+    font-family:monospace;
+}
+
+.success-bubble{
+    background:#e8f8e8;
+    border:2px solid #4caf50;
+}
+
+.error-bubble{
+    background:#fff3e0;
+    border:2px solid #ff9800;
+}
+
+.map-area{
+    margin-top:30px;
+    background:white;
+    padding:20px;
+    border-radius:15px;
+}
+
+.map-list{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+}
+
+.place{
+    border:1px solid #ccc;
+    padding:15px;
+    border-radius:10px;
+    width:180px;
+    text-align:center;
+    background:#fffdf5;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>mainくん Java World</h1>
+
+<div class="subtitle">
+mainくんたちと、Javaの世界をぼうけんしよう！
+</div>
+</header>
+
+<div class="container">
+
+<div class="main-area">
+
+<div class="left-panel">
+
+<div id="mainMessage">
+
+<h2>こんにちは！</h2>
+
+<p>ぼくは mainくん！</p>
+
+<p>ここは Java の世界。</p>
+
+<p>わからなくても大丈夫。</p>
+
+<p>いっしょにゆっくり学んでいこう！</p>
+
+</div>
+
+</div>
+
+<div class="right-panel">
+
+<h2>はじめてのことば</h2>
+
+<textarea id="codeInput" rows="4">System.out.println("こんにちは");</textarea>
+
+<button onclick="runJava()">
+Javaさんに伝える（実行）
+</button>
+
+<h3>Javaさんからの返事</h3>
+
+<div id="result" class="code-box success-bubble">
+こんにちは
+</div>
+
+</div>
+
+</div>
+
+<div class="map-area">
+
+<h2>Javaの世界マップ</h2>
+
+<div class="map-list">
+
+<div class="place">
+<h3>main村</h3>
+<p>Javaさんに話しかけよう！</p>
+</div>
+
+<div class="place">
+<h3>データ型の浜辺</h3>
+<p>データ型のなかまたちに会おう！</p>
+</div>
+
+<div class="place">
+<h3>ifのパン屋さん</h3>
+<p>条件分岐を学ぼう！</p>
+</div>
+
+<div class="place">
+<h3>switch寿司</h3>
+<p>switch文を学ぼう！</p>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+function runJava(){
 
     const code =
         document.getElementById("codeInput").value.trim();
@@ -9,12 +203,10 @@ function runJava() {
     const mainMessage =
         document.getElementById("mainMessage");
 
-    // print と println の両方を成功扱い
-
     let match =
         code.match(/^System\.out\.print(ln)?\("([^"]*)"\);$/);
 
-    if (match) {
+    if(match){
 
         const text = match[2];
 
@@ -42,9 +234,7 @@ function runJava() {
         return;
     }
 
-    // ; がない
-
-    if (code.match(/^System\.out\.print(ln)?\(".*"\)$/)) {
+    if(code.match(/^System\.out\.print(ln)?\(".*"\)$/)){
 
         result.className =
             "code-box error-bubble";
@@ -60,18 +250,12 @@ function runJava() {
             <p>文の最後の ; が見つからなくて</p>
 
             <p>困っているみたい。</p>
-
-            <p>Javaでは文の最後に</p>
-
-            <p>; が必要なんだ。</p>
         `;
 
         return;
     }
 
-    // ) がない
-
-    if (code.match(/^System\.out\.print(ln)?\(.*;$/)) {
+    if(code.match(/^System\.out\.print(ln)?\(.*;$/)){
 
         result.className =
             "code-box error-bubble";
@@ -87,23 +271,15 @@ function runJava() {
             <p>閉じるカッコ ) が</p>
 
             <p>見つからなかったみたい。</p>
-
-            <p>開いたカッコには</p>
-
-            <p>閉じるカッコが必要なんだ。</p>
         `;
 
         return;
     }
 
-    // 全角ダブルクォーテーション
-
-    if (
-        code.includes("“") ||
-        code.includes("”") ||
-        code.includes("「") ||
-        code.includes("」")
-    ) {
+    if(code.includes("“") ||
+       code.includes("”") ||
+       code.includes("「") ||
+       code.includes("」")){
 
         result.className =
             "code-box error-bubble";
@@ -114,19 +290,13 @@ function runJava() {
         mainMessage.innerHTML = `
             <h2>こんにちは！</h2>
 
-            <p>ぼくは mainくん！</p>
-
             <p>全角の引用符が使われているみたい。</p>
-
-            <p>半角の " を使ってみよう！</p>
         `;
 
         return;
     }
 
-    // 文字列の " がない
-
-    if (code.match(/^System\.out\.print(ln)?\([^)]+\);$/)) {
+    if(code.match(/^System\.out\.print(ln)?\([^)]+\);$/)){
 
         result.className =
             "code-box error-bubble";
@@ -136,12 +306,6 @@ function runJava() {
 
         mainMessage.innerHTML = `
             <h2>こんにちは！</h2>
-
-            <p>文字を探したけれど</p>
-
-            <p>見つからなかったみたい。</p>
-
-            <p>文字を表示するときは</p>
 
             <p>"こんにちは"</p>
 
@@ -151,9 +315,7 @@ function runJava() {
         return;
     }
 
-    // System.out. はあるけどメソッド名が違う
-
-    if (code.includes("System.out.")) {
+    if(code.includes("System.out.")){
 
         result.className =
             "code-box error-bubble";
@@ -164,15 +326,7 @@ function runJava() {
         mainMessage.innerHTML = `
             <h2>こんにちは！</h2>
 
-            <p>Javaさんは</p>
-
-            <p>その命令を知らないみたい。</p>
-
-            <p>まずは</p>
-
-            <p>System.out.println("こんにちは");</p>
-
-            <p>を書いてみよう！</p>
+            <p>Javaさんはその命令を知らないみたい。</p>
         `;
 
         return;
@@ -187,12 +341,6 @@ function runJava() {
     mainMessage.innerHTML = `
         <h2>こんにちは！</h2>
 
-        <p>ぼくは mainくん！</p>
-
-        <p>Javaさんは</p>
-
-        <p>まだ読み方が分からないみたい。</p>
-
         <p>まずは</p>
 
         <p>System.out.println("こんにちは");</p>
@@ -200,8 +348,8 @@ function runJava() {
         <p>を書いてみよう！</p>
     `;
 }
+
 </script>
 
 </body>
-
 </html>
