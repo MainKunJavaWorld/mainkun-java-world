@@ -58,13 +58,13 @@ h1{
 }
 
 .code-box{
-    background:#f0f0f0;
-    border:1px solid #ccc;
-    padding:15px;
     font-family:monospace;
     margin-top:10px;
     width:100%;
     box-sizing:border-box;
+    padding:15px;
+    border-radius:15px;
+    min-height:60px;
 }
 
 button{
@@ -72,6 +72,16 @@ button{
     padding:12px 24px;
     font-size:18px;
     cursor:pointer;
+}
+
+.success-bubble{
+    background:#e8f8e8;
+    border:2px solid #4caf50;
+}
+
+.error-bubble{
+    background:#fff3e0;
+    border:2px solid #ff9800;
 }
 
 .map-area{
@@ -94,6 +104,13 @@ button{
     width:180px;
     text-align:center;
     background:#fffdf5;
+}
+
+textarea{
+    width:100%;
+    box-sizing:border-box;
+    padding:15px;
+    font-family:monospace;
 }
 
 </style>
@@ -140,7 +157,6 @@ mainくんたちと、Javaの世界をぼうけんしよう！
 
 <textarea
 id="codeInput"
-class="code-box"
 rows="4">System.out.println("こんにちは");</textarea>
 
 <button onclick="runJava()">
@@ -149,7 +165,7 @@ Javaさんに伝える（実行）
 
 <h3>Javaさんからの返事</h3>
 
-<div id="result" class="code-box">
+<div id="result" class="code-box success-bubble">
 こんにちは
 </div>
 
@@ -194,7 +210,7 @@ Javaさんに伝える（実行）
 function runJava() {
 
     const code =
-        document.getElementById("codeInput").value;
+        document.getElementById("codeInput").value.trim();
 
     const result =
         document.getElementById("result");
@@ -202,12 +218,15 @@ function runJava() {
     const mainMessage =
         document.getElementById("mainMessage");
 
-    const match =
-        code.match(/System\.out\.println\("([^"]*)"\);/);
+    const successMatch =
+        code.match(/^System\.out\.println\("([^"]*)"\);$/);
 
-    if (match) {
+    if (successMatch) {
 
-        const text = match[1];
+        const text = successMatch[1];
+
+        result.className =
+            "code-box success-bubble";
 
         result.innerHTML = text;
 
@@ -227,12 +246,16 @@ function runJava() {
             <p>いろいろ試してみよう！</p>
         `;
 
-    } else {
+        return;
+    }
 
-        result.innerHTML = `
-            Error: Invalid statement.<br>
-            Expected: System.out.println("text");
-        `;
+    if (code.match(/^System\.out\.println\(".*"\)$/)) {
+
+        result.className =
+            "code-box error-bubble";
+
+        result.innerHTML =
+            "error: ';' expected";
 
         mainMessage.innerHTML = `
             <h2>こんにちは！</h2>
@@ -243,15 +266,87 @@ function runJava() {
 
             <p>Javaさんは怒っているんじゃないんだ。</p>
 
-            <p>知らない文が来て困っているんだよ。</p>
+            <p>文の最後の ; が見つからなくて</p>
 
-            <p>まずは</p>
-
-            <p>System.out.println("こんにちは");</p>
-
-            <p>の形で書いてみよう！</p>
+            <p>困っているんだよ。</p>
         `;
+
+        return;
     }
+
+    if (code.match(/^System\.out\.println\([A-Za-z0-9_ぁ-んァ-ヶ一-龯]+\);$/)) {
+
+        result.className =
+            "code-box error-bubble";
+
+        result.innerHTML =
+            "error: cannot find symbol";
+
+        mainMessage.innerHTML = `
+            <h2>こんにちは！</h2>
+
+            <p>ぼくは mainくん！</p>
+
+            <p>文字を探したけど</p>
+
+            <p>見つからなかったみたい。</p>
+
+            <p>文字を表示するときは</p>
+
+            <p>"こんにちは"</p>
+
+            <p>みたいに " " で囲もう！</p>
+        `;
+
+        return;
+    }
+
+    if (code.match(/^System\.out\.println\(.*;$/)) {
+
+        result.className =
+            "code-box error-bubble";
+
+        result.innerHTML =
+            "error: ')' expected";
+
+        mainMessage.innerHTML = `
+            <h2>こんにちは！</h2>
+
+            <p>ぼくは mainくん！</p>
+
+            <p>閉じるカッコ ) が</p>
+
+            <p>見つからなかったみたい。</p>
+
+            <p>開いたカッコには</p>
+
+            <p>閉じるカッコが必要なんだ。</p>
+        `;
+
+        return;
+    }
+
+    result.className =
+        "code-box error-bubble";
+
+    result.innerHTML =
+        "error: invalid statement";
+
+    mainMessage.innerHTML = `
+        <h2>こんにちは！</h2>
+
+        <p>ぼくは mainくん！</p>
+
+        <p>Javaさんは</p>
+
+        <p>まだ読み方が分からないみたい。</p>
+
+        <p>まずは</p>
+
+        <p>System.out.println("こんにちは");</p>
+
+        <p>を書いてみよう！</p>
+    `;
 }
 
 </script>
