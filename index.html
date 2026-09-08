@@ -4,226 +4,652 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>mainくん Java World</title>
+
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{font-family:"BIZ UDPGothic","Yu Gothic",Meiryo,sans-serif;color:#252525;background:linear-gradient(#8fd3ea 0 118px,#eef7f8 118px 100%);min-height:100vh}
-.page{max-width:1180px;margin:0 auto;padding-bottom:38px}
-.header{height:118px;position:relative;padding:22px 24px 12px;overflow:hidden}
-.header:after{content:"";position:absolute;left:-5%;right:-5%;bottom:-35px;height:75px;background:#a8d98b;border-radius:50% 50% 0 0/100% 100% 0 0;opacity:.9}
-.header h1{margin:0;font-size:30px;color:#6d421f;position:relative;z-index:2}
-.header p{margin:6px 0 0;font-size:14px;position:relative;z-index:2}
-.header-main{position:absolute;right:45px;bottom:-4px;width:108px;height:auto;z-index:3}
-.main-grid{display:grid;grid-template-columns:1fr 1.08fr;gap:18px;padding:18px 18px 0}
-.panel{background:#fffdf8;border:2px solid #d5b77b;border-radius:18px;box-shadow:0 5px 14px rgba(85,70,40,.12);overflow:hidden}
-.whiteboard-panel{position:relative;min-height:490px;background:#f8f7ef;border-color:#a78350;padding:0}
-.board-frame{position:absolute;inset:14px 14px 54px;border:8px solid #b58a4f;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 2px #d9d0bd,0 3px 4px rgba(0,0,0,.16)}
-.board-title{font-size:23px;font-weight:700;margin:24px 28px 10px;color:#3f3022}
-.board-title:before{content:"💡";margin-right:9px}
-.board-title-line{height:7px;background:#f7dc35;border-radius:8px;width:70%;margin-left:28px;margin-bottom:18px}
-.message-box{margin:0 28px 25px;min-height:245px;padding:14px 12px;font-size:17px;line-height:1.9;white-space:normal;outline:none}
-.message-box h2{font-size:25px;margin:0 0 8px}
-.message-box p{margin:4px 0}
-.board-main{position:absolute;right:12px;bottom:3px;width:185px;max-height:270px;object-fit:contain;object-position:bottom}
-.chalk-tray{position:absolute;left:12%;right:12%;bottom:20px;height:12px;background:#8c683e;border-radius:3px;box-shadow:0 3px 0 #6d4d2e}
-.note-panel{padding:18px 20px 20px;background:#fffdf7;position:relative;min-height:490px}
-.note-title{font-size:25px;font-weight:700;margin:0 0 10px;color:#30291f}
-.note-title:before{content:"📖";margin-right:8px}
-.note-pencil{position:absolute;right:20px;top:18px;font-size:28px;transform:rotate(-18deg)}
-.note-tip{position:absolute;right:18px;top:55px;width:170px;padding:10px 12px;background:#fff1a8;border:1px solid #e4c957;border-radius:8px;box-shadow:2px 3px 4px rgba(0,0,0,.08);font-size:12px;line-height:1.55}
-.code-frame{margin-top:38px;position:relative;padding:0 0 0 56px;border:3px solid #b6dcef;border-radius:12px;background:repeating-linear-gradient(to bottom,#fffdf6 0,#fffdf6 31px,#d9e9ef 32px,#fffdf6 33px);min-height:205px;overflow:hidden}
-.code-frame:before{content:"1\A 2\A 3\A 4\A 5";white-space:pre;position:absolute;left:0;top:0;width:42px;height:100%;padding-top:6px;text-align:center;color:#777;background:rgba(240,240,235,.75);line-height:32px;font:14px/32px Consolas,"Courier New",monospace}
-.main-signature{font:16px/1.5 Consolas,"Courier New",monospace;color:#174e8a;margin:0 0 5px;padding-left:2px;white-space:nowrap}
-.close-brace{font:18px Consolas,"Courier New",monospace;margin:7px 0 0 2px}
-#codeInput{display:block;width:100%;height:170px;resize:vertical;border:0;outline:none;background:transparent;padding:7px 12px 8px 12px;font:16px/32px Consolas,"Courier New",monospace;color:#202020;white-space:pre;tab-size:4;overflow:auto}
-#codeInput:focus{box-shadow:inset 0 0 0 2px rgba(96,169,211,.25)}
-.run-button{display:block;margin:18px auto 16px;border:0;border-radius:28px;background:#2d95d2;color:white;font-size:17px;font-weight:700;padding:12px 26px;box-shadow:0 4px 0 #176d9f;cursor:pointer}
-.run-button:hover{background:#2488c2}.run-button:active{transform:translateY(2px);box-shadow:0 2px 0 #176d9f}
-.reply-title{font-size:16px;font-weight:700;margin:0 0 8px}
-.code-box{min-height:62px;padding:13px 14px;border-radius:11px;font:14px/1.5 Consolas,"Courier New",monospace;white-space:pre-wrap;overflow:auto}
-.success-bubble{background:#e9f6ff;border:2px solid #75bfe5}
-.error-bubble{background:#fff3e0;border:2px solid #ff9800}
-.book-main{position:absolute;right:8px;bottom:8px;width:88px;height:auto}
-.map-panel{margin:18px;padding:18px 16px 20px;background:rgba(255,255,255,.94);border:2px solid #d8e0cf;border-radius:18px;box-shadow:0 5px 14px rgba(85,70,40,.10)}
-.map-title{font-size:25px;font-weight:700;margin:0 0 15px}.map-sub{font-size:13px;font-weight:400;margin-left:10px}
-.map-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.map-card{position:relative;min-height:120px;border:1px solid #d6ccb6;border-radius:12px;background:#fffdf4;padding:17px 9px 10px;text-align:center;box-shadow:0 2px 5px rgba(0,0,0,.05);cursor:pointer;transition:transform .15s,box-shadow .15s}
-.map-card:hover{transform:translateY(-3px);box-shadow:0 5px 10px rgba(0,0,0,.10)}
-.map-icon{font-size:37px;display:block;margin-bottom:5px}.map-name{font-weight:700;font-size:15px}.map-desc{font-size:11px;line-height:1.45;margin-top:7px}
-@media(max-width:850px){.page{max-width:100%}.main-grid{grid-template-columns:1fr}.whiteboard-panel,.note-panel{min-height:430px}.map-grid{grid-template-columns:repeat(2,1fr)}.header-main{right:20px;width:85px}.note-tip{display:none}}
-@media(max-width:520px){.header h1{font-size:23px}.header p{font-size:11px}.main-grid{padding:10px;gap:10px}.map-panel{margin:10px}.map-grid{grid-template-columns:1fr 1fr}.board-main{width:145px}.message-box{font-size:14px}.note-title{font-size:21px}.main-signature{font-size:13px}}
+*{
+    box-sizing:border-box;
+}
+
+html,body{
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:"BIZ UDPGothic","Yu Gothic",Meiryo,sans-serif;
+    color:#252525;
+    background:#f3f4f4;
+}
+
+.page{
+    max-width:1180px;
+    margin:0 auto;
+    padding:18px 18px 40px;
+}
+
+/* ===== ヘッダー ===== */
+
+.header{
+    position:relative;
+    min-height:108px;
+    padding:20px 235px 18px 28px;
+    overflow:hidden;
+    background:#8bd0e9;
+    border-radius:0 0 28px 28px;
+    box-shadow:0 3px 0 rgba(70,110,125,.12);
+}
+
+.header h1{
+    margin:0;
+    color:#5a3a1a;
+    font-size:30px;
+    line-height:1.3;
+}
+
+.header p{
+    margin:7px 0 0;
+    font-size:15px;
+}
+
+.header-main{
+    position:absolute;
+    right:28px;
+    bottom:-3px;
+    width:112px;
+}
+
+/* ===== 上段 ===== */
+
+.main-grid{
+    display:grid;
+    grid-template-columns:1fr 1.08fr;
+    gap:18px;
+    margin-top:18px;
+}
+
+/* ===== ホワイトボード ===== */
+
+.whiteboard-panel{
+    position:relative;
+    min-height:510px;
+    padding:18px 18px 24px;
+    background:#fffdf9;
+    border:2px solid #d9d1c7;
+    border-radius:18px;
+    box-shadow:0 5px 14px rgba(80,70,60,.10);
+    overflow:hidden;
+}
+
+.board-title{
+    margin:0 0 14px;
+    font-size:21px;
+    color:#4b433d;
+}
+
+.board{
+    position:relative;
+    min-height:380px;
+    margin-right:18px;
+    padding:24px 25px 28px;
+    background:#ffffff;
+    border:8px solid #b58d72;
+    border-radius:12px;
+    box-shadow:inset 0 0 0 2px #ece8e3,
+               0 4px 0 #8d6c57;
+}
+
+.board::after{
+    content:"";
+    position:absolute;
+    left:10%;
+    right:10%;
+    bottom:-17px;
+    height:10px;
+    background:#8d6c57;
+    border-radius:0 0 8px 8px;
+}
+
+.board-label{
+    display:inline-block;
+    margin-bottom:15px;
+    padding:5px 11px;
+    border-radius:8px;
+    background:#f4eee8;
+    color:#65584e;
+    font-size:13px;
+    font-weight:bold;
+}
+
+.message-box{
+    min-height:270px;
+    padding:18px 20px;
+    border:2px dashed #c9d4d8;
+    border-radius:12px;
+    background:#fcfefe;
+    line-height:1.9;
+    font-size:15px;
+}
+
+.message-box h2{
+    margin:0 0 10px;
+    font-size:20px;
+    color:#5a3a1a;
+}
+
+.message-box p{
+    margin:7px 0;
+}
+
+.board-main{
+    position:absolute;
+    right:-2px;
+    bottom:-8px;
+    width:135px;
+    z-index:3;
+}
+
+/* ===== Java練習エリア ===== */
+
+.practice-panel{
+    position:relative;
+    padding:22px;
+    background:#fffdf7;
+    border:2px solid #d9d0c2;
+    border-radius:18px;
+    box-shadow:0 5px 14px rgba(80,70,60,.10);
+}
+
+.practice-title{
+    margin:0;
+    font-size:22px;
+    color:#4c4136;
+}
+
+.practice-subtitle{
+    margin:6px 0 14px;
+    color:#74685d;
+    font-size:13px;
+}
+
+.notebook{
+    position:relative;
+    padding:19px 18px 18px 30px;
+    background:
+        linear-gradient(to right, transparent 0, transparent 30px, rgba(224,112,112,.28) 30px, rgba(224,112,112,.28) 32px, transparent 32px),
+        repeating-linear-gradient(to bottom, #fffefb 0, #fffefb 31px, #d9e4e8 32px);
+    border:1px solid #cfc7bc;
+    border-radius:10px;
+    box-shadow:inset 0 0 10px rgba(80,70,60,.06);
+}
+
+.notebook-header{
+    padding-left:13px;
+    margin-bottom:4px;
+    color:#5b554f;
+    font-size:13px;
+    font-weight:bold;
+}
+
+.code-frame{
+    padding-left:13px;
+    font-family:Consolas,"Courier New",monospace;
+    font-size:15px;
+    line-height:31px;
+    white-space:nowrap;
+}
+
+.code-line{
+    color:#39444a;
+}
+
+.code-input{
+    display:block;
+    width:100%;
+    min-height:155px;
+    padding:0 0 0 0;
+    resize:vertical;
+    border:0;
+    outline:0;
+    background:transparent;
+    color:#263238;
+    font-family:Consolas,"Courier New",monospace;
+    font-size:15px;
+    line-height:31px;
+    white-space:pre;
+    overflow:auto;
+    spellcheck:false;
+}
+
+.run-button{
+    display:block;
+    margin:18px auto 0;
+    padding:12px 25px;
+    border:2px solid #7c9aa5;
+    border-radius:10px;
+    background:#e8f4f7;
+    color:#34474e;
+    font-size:15px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.15s;
+}
+
+.run-button:hover{
+    background:#dceef2;
+    transform:translateY(-1px);
+}
+
+.reply-title{
+    margin:22px 0 8px;
+    font-size:15px;
+    color:#51483f;
+}
+
+.code-box{
+    min-height:74px;
+    padding:14px 16px;
+    border-radius:11px;
+    font-family:Consolas,"Courier New",monospace;
+    font-size:14px;
+    line-height:1.7;
+    overflow:auto;
+}
+
+.success-bubble{
+    background:#e5f5fb;
+    border:2px solid #8ccddd;
+    color:#23414a;
+}
+
+.error-bubble{
+    background:#fff3e0;
+    border:2px solid #e7a34c;
+    color:#593a1d;
+}
+
+/* ===== 下部 ===== */
+
+.map-area{
+    margin-top:18px;
+    padding:22px;
+    background:#fffdf9;
+    border:2px solid #ddd5cc;
+    border-radius:18px;
+    box-shadow:0 5px 14px rgba(80,70,60,.08);
+}
+
+.map-area h2{
+    margin:0 0 15px;
+    font-size:21px;
+    color:#51483f;
+}
+
+.map-list{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+}
+
+.place{
+    min-height:105px;
+    padding:14px 10px;
+    border:1px solid #d4cec5;
+    border-radius:11px;
+    background:#fffdf5;
+    text-align:center;
+}
+
+.place h3{
+    margin:0 0 8px;
+    font-size:16px;
+}
+
+.place p{
+    margin:0;
+    font-size:12px;
+    line-height:1.6;
+}
+
+/* ===== スマホ ===== */
+
+@media(max-width:800px){
+    .header{
+        padding-right:145px;
+    }
+
+    .header h1{
+        font-size:24px;
+    }
+
+    .header-main{
+        width:88px;
+        right:15px;
+    }
+
+    .main-grid{
+        grid-template-columns:1fr;
+    }
+
+    .map-list{
+        grid-template-columns:repeat(2,1fr);
+    }
+}
+
+@media(max-width:480px){
+    .page{
+        padding:0 10px 25px;
+    }
+
+    .header{
+        min-height:92px;
+        padding:15px 105px 14px 16px;
+        border-radius:0 0 18px 18px;
+    }
+
+    .header h1{
+        font-size:20px;
+    }
+
+    .header p{
+        font-size:11px;
+    }
+
+    .header-main{
+        width:75px;
+        right:8px;
+    }
+
+    .whiteboard-panel,
+    .practice-panel,
+    .map-area{
+        padding:14px;
+    }
+
+    .board{
+        margin-right:0;
+        padding:16px 14px;
+    }
+
+    .board-main{
+        width:105px;
+    }
+
+    .message-box{
+        padding:13px;
+        padding-bottom:95px;
+    }
+
+    .map-list{
+        grid-template-columns:1fr;
+    }
+}
 </style>
 </head>
+
 <body>
+
 <div class="page">
+
 <header class="header">
-  <h1>mainくん Java World</h1>
-  <p>mainくんたちと、Javaの世界をぼうけんしよう！</p>
-  <img class="header-main" src="assets/main-kun-standing.png" alt="mainくん">
+    <h1>mainくん Java World</h1>
+    <p>mainくんたちと、Javaの世界をぼうけんしよう！</p>
+    <img class="header-main" src="main-kun-book.png" alt="本を持っているmainくん">
 </header>
 
 <main class="main-grid">
-  <section class="panel whiteboard-panel" aria-label="mainくんからのメッセージ">
-    <div class="board-frame">
-      <h2 class="board-title">mainくんからのメッセージ</h2>
-      <div class="board-title-line"></div>
-      <div id="mainMessage" class="message-box">
-        <h2>こんにちは！</h2>
-        <p>ぼくは mainくん！</p>
-        <p>Javaさんが君の文章を読んで、</p>
-        <p>「こんにちは」を返してくれたよ！</p>
-        <p>" " の中に書いた言葉が表示されるんだ。</p>
-        <p>いろいろ試してみよう！</p>
-      </div>
-    </div>
-    <img class="board-main" src="assets/main-kun-waving.png" alt="mainくん">
-    <div class="chalk-tray" aria-hidden="true"></div>
-  </section>
 
-  <section class="panel note-panel" aria-label="Java練習エリア">
-    <h2 class="note-title">Java練習エリア</h2>
-    <div class="note-pencil" aria-hidden="true">✏️</div>
-    <div class="note-tip">ここにJavaの命令を書いてみよう！</div>
-    <div class="main-signature">public static void main(String[] args) {</div>
-    <div class="code-frame">
-      <textarea id="codeInput" spellcheck="false" aria-label="Javaコード入力">    System.out.println("こんにちは");</textarea>
-    </div>
-    <div class="close-brace">}</div>
-    <button class="run-button" onclick="runJava()">▶ Javaさんに伝える（実行）</button>
-    <div class="reply-title">Javaさんからの返事</div>
-    <div id="result" class="code-box success-bubble">こんにちは</div>
-    <img class="book-main" src="assets/main-kun-book.png" alt="本を持つmainくん">
-  </section>
+    <!-- 左：mainくんのホワイトボード -->
+    <section class="whiteboard-panel">
+        <h2 class="board-title">💬 mainくんからのメッセージ</h2>
+
+        <div class="board">
+            <div class="board-label">mainくんのJavaレッスン</div>
+
+            <div id="mainMessage" class="message-box">
+                <h2>こんにちは！</h2>
+                <p>ぼくは mainくん！</p>
+                <p>ここでは、Javaさんに<br>文章を伝えてみよう。</p>
+                <p>右のノートにJavaを書いて、<br>「実行」してみてね！</p>
+            </div>
+
+            <img class="board-main" src="main-kun-waving.png" alt="mainくん">
+        </div>
+    </section>
+
+    <!-- 右：Java練習エリア -->
+    <section class="practice-panel">
+        <h2 class="practice-title">Java練習エリア</h2>
+        <p class="practice-subtitle">Javaさんに伝える文章を書いてみよう！</p>
+
+        <div class="notebook">
+
+            <div class="notebook-header">
+                public static void main(String[] args) {
+            </div>
+
+            <div class="code-frame">
+                <textarea
+                    id="codeInput"
+                    class="code-input"
+                    rows="4"
+                    spellcheck="false"
+                    aria-label="Javaコード入力欄">    System.out.println("こんにちは");</textarea>
+            </div>
+
+            <div class="code-frame">
+                }
+            </div>
+
+            <button class="run-button" onclick="runJava()">
+                Javaさんに伝える（実行）
+            </button>
+
+            <div class="reply-title">Javaさんからの返事</div>
+
+            <div id="result" class="code-box success-bubble">こんにちは</div>
+
+        </div>
+    </section>
+
 </main>
 
-<section class="map-panel">
-  <h2 class="map-title">🗺 Javaの世界マップ <span class="map-sub">それぞれの場所で、いろいろなJavaを学ぼう！</span></h2>
-  <div class="map-grid">
-    <div class="map-card"><span class="map-icon">🏠</span><div class="map-name">main村</div><div class="map-desc">Javaさんに話しかけよう！</div></div>
-    <div class="map-card"><span class="map-icon">🏖️</span><div class="map-name">データ型の浜辺</div><div class="map-desc">データ型のなかまたちに会おう！</div></div>
-    <div class="map-card"><span class="map-icon">🥐</span><div class="map-name">ifのパン屋さん</div><div class="map-desc">条件分岐を学ぼう！</div></div>
-    <div class="map-card"><span class="map-icon">🍣</span><div class="map-name">switch寿司</div><div class="map-desc">switch文を学ぼう！</div></div>
-  </div>
+<section class="map-area">
+    <h2>Javaの世界マップ</h2>
+
+    <div class="map-list">
+        <div class="place">
+            <h3>main村</h3>
+            <p>Javaさんに話しかけよう！</p>
+        </div>
+
+        <div class="place">
+            <h3>データ型の浜辺</h3>
+            <p>データ型のなかまたちに会おう！</p>
+        </div>
+
+        <div class="place">
+            <h3>ifのパン屋さん</h3>
+            <p>条件分岐を学ぼう！</p>
+        </div>
+
+        <div class="place">
+            <h3>switch寿司</h3>
+            <p>switch文を学ぼう！</p>
+        </div>
+    </div>
 </section>
+
 </div>
 
 <script>
-function setMessage(html){
-  document.getElementById("mainMessage").innerHTML = html;
+function setMessage(title, paragraphs){
+    const mainMessage = document.getElementById("mainMessage");
+
+    mainMessage.innerHTML =
+        "<h2>" + title + "</h2>" +
+        paragraphs.map(function(text){
+            return "<p>" + text + "</p>";
+        }).join("");
 }
 
-function setResult(text, type){
-  const result = document.getElementById("result");
-  result.className = "code-box " + type;
-  result.textContent = text;
+function showResult(text, isError){
+    const result = document.getElementById("result");
+
+    result.className =
+        "code-box " + (isError ? "error-bubble" : "success-bubble");
+
+    result.textContent = text;
 }
 
 function runJava(){
-  const code = document.getElementById("codeInput").value.trim();
 
-  if (code === "") {
-    setResult("error: invalid statement", "error-bubble");
-    setMessage(`
-      <h2>こんにちは！</h2>
-      <p>Javaさんに伝える文章が</p>
-      <p>まだ書かれていないみたい。</p>
-      <p>ノートにJavaの命令を書いてみよう！</p>
-    `);
-    return;
-  }
+    const rawCode =
+        document.getElementById("codeInput").value;
 
-  let match = code.match(/^\\s*System\\.out\\.print(ln)?\\("([^"]*)"\\);$/);
-  if (match) {
-    const text = match[2];
-    setResult(text, "success-bubble");
-    setMessage(`
-      <h2>こんにちは！</h2>
-      <p>ぼくは mainくん！</p>
-      <p>Javaさんが君の文章を読んで、</p>
-      <p>「${escapeHtml(text)}」</p>
-      <p>を返してくれたよ！</p>
-      <p>" " の中に書いた言葉が表示されるんだ。</p>
-      <p>いろいろ試してみよう！</p>
-    `);
-    return;
-  }
+    const code =
+        rawCode.trim();
 
-  if (/^\\s*System\\.out\\.print(ln)?\\(".*"\\)\\s*$/.test(code)) {
-    setResult("error: ';' expected", "error-bubble");
-    setMessage(`
-      <h2>あとちょっと！</h2>
-      <p>文の最後に <strong>;</strong> が必要みたい。</p>
-      <p>Javaでは、文の最後に</p>
-      <p><strong>;</strong> をつけるんだよ。</p>
-    `);
-    return;
-  }
+    /* 正しい print / println */
+    const match =
+        code.match(/^System\.out\.print(ln)?\("([^"]*)"\);$/);
 
-  if (/^\\s*System\\.out\\.print(ln)?\\(.*;\\s*$/.test(code)) {
-    setResult("error: ')' expected", "error-bubble");
-    setMessage(`
-      <h2>あとちょっと！</h2>
-      <p><strong>(</strong> と <strong>)</strong> は</p>
-      <p>ペアで必要なんだよ。</p>
-      <p>開くカッコと閉じるカッコを</p>
-      <p>確認してみよう！</p>
-    `);
-    return;
-  }
+    if(match){
 
-  if (code.includes("“") || code.includes("”") || code.includes("「") || code.includes("」")) {
-    setResult("error: illegal character", "error-bubble");
-    setMessage(`
-      <h2>文字の書き方を確認しよう！</h2>
-      <p>全角の引用符が使われているみたい。</p>
-      <p>Javaで文字を囲むときは</p>
-      <p>半角の <strong>" "</strong> を使ってみよう！</p>
-    `);
-    return;
-  }
+        const text = match[2];
 
-  if (/^\\s*System\\.out\\.print(ln)?\\([^)]+\\);\\s*$/.test(code)) {
-    setResult("error: cannot find symbol", "error-bubble");
-    setMessage(`
-      <h2>文字の書き方を確認しよう！</h2>
-      <p>文字を探したけれど</p>
-      <p>見つからなかったみたい。</p>
-      <p>文字を表示するときは</p>
-      <p><strong>"こんにちは"</strong></p>
-      <p>のように <strong>" "</strong> で囲もう！</p>
-    `);
-    return;
-  }
+        showResult(text, false);
 
-  if (code.includes("System.out.")) {
-    setResult("error: cannot find symbol", "error-bubble");
-    setMessage(`
-      <h2>命令を確認してみよう！</h2>
-      <p>Javaさんは、その命令を</p>
-      <p>知らないみたい。</p>
-      <p>まずは</p>
-      <p><strong>System.out.println("こんにちは");</strong></p>
-      <p>を書いてみよう！</p>
-    `);
-    return;
-  }
+        setMessage(
+            "できたよ！",
+            [
+                "Javaさんが君の文章を読んで、",
+                "「" + text + "」",
+                "を返してくれたよ！",
+                "\" \" の中に書いた言葉が表示されるんだ。",
+                "println は表示したあとに改行するよ。",
+                "print は改行しないで表示するんだ。"
+            ]
+        );
 
-  setResult("error: invalid statement", "error-bubble");
-  setMessage(`
-    <h2>もう一度見てみよう！</h2>
-    <p>Javaさんは、まだこの文章の</p>
-    <p>読み方が分からないみたい。</p>
-    <p>まずは</p>
-    <p><strong>System.out.println("こんにちは");</strong></p>
-    <p>から試してみよう！</p>
-  `);
-}
+        return;
+    }
 
-function escapeHtml(text){
-  return text.replace(/[&<>"']/g, function(ch){
-    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch];
-  });
+    /* ; がない */
+    if(code.match(/^System\.out\.print(ln)?\(".*"\)$/)){
+
+        showResult("error: ';' expected", true);
+
+        setMessage(
+            "もう少し！",
+            [
+                "文の最後に ; が見つからないみたい。",
+                "Javaでは文の最後に ; が必要なんだ。",
+                "最後に ; をつけてみよう！"
+            ]
+        );
+
+        return;
+    }
+
+    /* 全角・日本語の引用符 */
+    if(
+        code.includes("“") ||
+        code.includes("”") ||
+        code.includes("「") ||
+        code.includes("」")
+    ){
+
+        showResult("error: illegal character", true);
+
+        setMessage(
+            "引用符を確認してみよう！",
+            [
+                "全角の引用符が使われているみたい。",
+                "Javaでは半角の \" を使うよ。",
+                "\"こんにちは\" のように囲んでみよう！"
+            ]
+        );
+
+        return;
+    }
+
+    /* 括弧の組み合わせ */
+    const openCount =
+        (code.match(/\(/g) || []).length;
+
+    const closeCount =
+        (code.match(/\)/g) || []).length;
+
+    if(
+        code.includes("System.out.") &&
+        openCount !== closeCount
+    ){
+
+        showResult("error: ')' expected", true);
+
+        setMessage(
+            "カッコを確認してみよう！",
+            [
+                "( と ) はペアで必要なんだよ。",
+                "開くカッコと閉じるカッコが",
+                "同じ数になっているか確認してみよう！"
+            ]
+        );
+
+        return;
+    }
+
+    /* 文字列の \" がない */
+    if(
+        code.match(/^System\.out\.print(ln)?\([^)]+\);$/)
+    ){
+
+        showResult("error: cannot find symbol", true);
+
+        setMessage(
+            "文字を囲んでみよう！",
+            [
+                "文字を表示したいときは、",
+                "\"こんにちは\" のように",
+                "\" \" で囲むんだよ。"
+            ]
+        );
+
+        return;
+    }
+
+    /* System.out. はあるが、print / println ではない */
+    if(code.includes("System.out.")){
+
+        showResult("error: cannot find symbol", true);
+
+        setMessage(
+            "その命令はまだ知らないみたい。",
+            [
+                "Javaさんは、その命令を知らないみたい。",
+                "まずは",
+                "System.out.println(\"こんにちは\");",
+                "の形を書いてみよう！"
+            ]
+        );
+
+        return;
+    }
+
+    /* それ以外 */
+    showResult("error: invalid statement", true);
+
+    setMessage(
+        "書き方を確認してみよう！",
+        [
+            "Javaさんは、まだ読み方が分からないみたい。",
+            "まずは",
+            "System.out.println(\"こんにちは\");",
+            "の形で書いてみよう！"
+        ]
+    );
 }
 </script>
+
 </body>
 </html>
