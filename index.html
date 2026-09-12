@@ -594,7 +594,9 @@ function executeJavaBlock(source, variables){
                 !line.startsWith("for") &&
                 !line.startsWith("while") &&
                 !line.startsWith("switch") &&
-                !line.startsWith("else")
+                !line.startsWith("else") &&
+                !line.startsWith("case") &&
+                !line.startsWith("default")
             ){
                 throw new Error("error: ';' expected");
             }
