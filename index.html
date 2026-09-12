@@ -992,17 +992,10 @@ function parseIf(source, pos, variables){
 /* =========================
    for
    ========================= */
-
 function parseFor(source, pos, variables){
 
     const open = source.indexOf("(", pos);
-
-    if(open === -1){
-        throw new Error("error: '(' expected");
-    }
-
-    const close =
-        findMatching(source, open, "(", ")");
+    const close = findMatching(source, open, "(", ")");
 
     const parts =
         source.slice(open + 1, close).split(";");
@@ -1015,23 +1008,12 @@ function parseFor(source, pos, variables){
     const condition = parts[1].trim();
     const update = parts[2].trim();
 
-    /* 初期化 */
+    // 初期化
     if(init){
-
-        if(
-            /^(int|double|boolean|char|String)\s+/.test(init)
-        ){
-            executeStatements(
-                init.endsWith(";") ? init : init + ";",
-                variables
-            );
-        }
-        else{
-            executeStatements(
-                init.endsWith(";") ? init : init + ";",
-                variables
-            );
-        }
+        executeStatements(
+            init.endsWith(";") ? init : init + ";",
+            variables
+        );
     }
 
     let cursor = close + 1;
@@ -1058,7 +1040,33 @@ function parseFor(source, pos, variables){
         output +=
             executeStatements(block, variables);
 
-        executeUpdate(update, variables);
+        // i++ / i-- を処理
+        const updateMatch =
+            update.match(/^([A-Za-z_][A-Za-z0-9_]*)(\+\+|--)$/);
+
+        if(!updateMatch){
+            throw new Error("error: invalid for update");
+        }
+
+        const name = updateMatch[1];
+        const operator = updateMatch[2];
+
+        if(!variables[name]){
+            throw new Error("error: cannot find symbol: " + name);
+        }
+
+        if(
+            variables[name].type !== "int" &&
+            variables[name].type !== "double"
+        ){
+            throw new Error("error: bad operand type");
+        }
+
+        if(operator === "++"){
+            variables[name].value++;
+        }else{
+            variables[name].value--;
+        }
 
         count++;
 
@@ -1072,7 +1080,6 @@ function parseFor(source, pos, variables){
         pos: blockEnd + 1
     };
 }
-
 
 /* =========================
    while
