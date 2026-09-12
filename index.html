@@ -1084,17 +1084,19 @@ function parseFor(source, pos, variables){
 /* =========================
    while
    ========================= */
-
 function parseWhile(source, pos, variables){
 
     const open = source.indexOf("(", pos);
     const close = findMatching(source, open, "(", ")");
 
     const condition =
-        source.slice(open + 1, close);
+        source.slice(open + 1, close).trim();
 
     let cursor = close + 1;
-    while(/\s/.test(source[cursor] || "")) cursor++;
+
+    while(/\s/.test(source[cursor] || "")){
+        cursor++;
+    }
 
     if(source[cursor] !== "{"){
         throw new Error("error: '{' expected");
@@ -1103,28 +1105,88 @@ function parseWhile(source, pos, variables){
     const blockEnd =
         findMatching(source, cursor, "{", "}");
 
-    const block =
+    let block =
         source.slice(cursor + 1, blockEnd);
 
     let output = "";
-    let guard = 0;
+    let count = 0;
 
     while(evaluateExpression(condition, variables)){
 
-        output += executeStatements(block, variables);
+        /*
+         * whileの中にある i++ / i-- を処理
+         */
+        const updateMatches = [];
 
-        guard++;
-        if(guard > 1000){
-            throw new Error("error: loop limit exceeded");
+        const updateRegex =
+            /([A-Za-z_][A-Za-z0-9_]*)(\+\+|--)\s*;/g;
+
+        let match;
+
+        while((match = updateRegex.exec(block)) !== null){
+
+            updateMatches.push({
+                name: match[1],
+                operator: match[2]
+            });
+        }
+
+        /*
+         * i++ / i-- を取り除いて、
+         * 残りの処理を実行
+         */
+        const blockWithoutUpdate =
+            block.replace(updateRegex, "");
+
+        output +=
+            executeStatements(
+                blockWithoutUpdate,
+                variables
+            );
+
+        /*
+         * i++ / i-- を実行
+         */
+        for(const update of updateMatches){
+
+            if(!variables[update.name]){
+                throw new Error(
+                    "error: cannot find symbol: " +
+                    update.name
+                );
+            }
+
+            if(
+                variables[update.name].type !== "int" &&
+                variables[update.name].type !== "double"
+            ){
+                throw new Error(
+                    "error: bad operand type"
+                );
+            }
+
+            if(update.operator === "++"){
+                variables[update.name].value++;
+            }
+            else{
+                variables[update.name].value--;
+            }
+        }
+
+        count++;
+
+        if(count > 1000){
+            throw new Error(
+                "error: loop limit exceeded"
+            );
         }
     }
 
     return {
-        output:output,
-        pos:blockEnd + 1
+        output: output,
+        pos: blockEnd + 1
     };
 }
-
 
 /* =========================
    switch
