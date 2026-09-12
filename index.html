@@ -884,38 +884,26 @@ function parseIf(source, pos, variables){
 
     let cursor = pos;
     let output = "";
-    let executed = false;
+    let conditionMatched = false;
 
-    while(true){
+    while (true) {
 
-        while(/\s/.test(source[cursor] || "")){
-            cursor++;
-        }
-
-        let isElseIf = false;
-
-        if(source.startsWith("if", cursor)){
+        // if または else if を処理
+        if (source.startsWith("if", cursor)) {
             cursor += 2;
         }
-        else if(source.startsWith("else", cursor)){
+        else if (source.startsWith("else", cursor)) {
 
             cursor += 4;
 
-            while(/\s/.test(source[cursor] || "")){
+            while (/\s/.test(source[cursor] || "")) {
                 cursor++;
             }
 
-            if(source.startsWith("if", cursor)){
-                cursor += 2;
-                isElseIf = true;
-            }
-            else{
+            if (!source.startsWith("if", cursor)) {
 
-                while(/\s/.test(source[cursor] || "")){
-                    cursor++;
-                }
-
-                if(source[cursor] !== "{"){
+                // 最後の else
+                if (source[cursor] !== "{") {
                     throw new Error("error: '{' expected");
                 }
 
@@ -925,7 +913,7 @@ function parseIf(source, pos, variables){
                 const elseBlock =
                     source.slice(cursor + 1, elseEnd);
 
-                if(!executed){
+                if (!conditionMatched) {
                     output =
                         executeStatements(elseBlock, variables);
                 }
@@ -935,16 +923,19 @@ function parseIf(source, pos, variables){
                     pos: elseEnd + 1
                 };
             }
+
+            cursor += 2;
         }
-        else{
+        else {
             throw new Error("error: 'if' expected");
         }
 
-        while(/\s/.test(source[cursor] || "")){
+        // 条件の開始
+        while (/\s/.test(source[cursor] || "")) {
             cursor++;
         }
 
-        if(source[cursor] !== "("){
+        if (source[cursor] !== "(") {
             throw new Error("error: '(' expected");
         }
 
@@ -956,11 +947,12 @@ function parseIf(source, pos, variables){
 
         cursor = conditionEnd + 1;
 
-        while(/\s/.test(source[cursor] || "")){
+        // { の位置まで進む
+        while (/\s/.test(source[cursor] || "")) {
             cursor++;
         }
 
-        if(source[cursor] !== "{"){
+        if (source[cursor] !== "{") {
             throw new Error("error: '{' expected");
         }
 
@@ -970,22 +962,26 @@ function parseIf(source, pos, variables){
         const block =
             source.slice(cursor + 1, blockEnd);
 
-        if(!executed &&
-           evaluateExpression(condition, variables)){
-
+        // まだどの条件も成立していない場合だけ実行
+        if (
+            !conditionMatched &&
+            evaluateExpression(condition, variables)
+        ) {
             output =
                 executeStatements(block, variables);
 
-            executed = true;
+            conditionMatched = true;
         }
 
         cursor = blockEnd + 1;
 
-        while(/\s/.test(source[cursor] || "")){
+        // 次の else / else if を探す
+        while (/\s/.test(source[cursor] || "")) {
             cursor++;
         }
 
-        if(!source.startsWith("else", cursor)){
+        if (!source.startsWith("else", cursor)) {
+
             return {
                 output: output,
                 pos: cursor
@@ -993,8 +989,6 @@ function parseIf(source, pos, variables){
         }
     }
 }
-
-
 /* =========================
    for
    ========================= */
