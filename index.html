@@ -996,7 +996,13 @@ function parseIf(source, pos, variables){
 function parseFor(source, pos, variables){
 
     const open = source.indexOf("(", pos);
-    const close = findMatching(source, open, "(", ")");
+
+    if(open === -1){
+        throw new Error("error: '(' expected");
+    }
+
+    const close =
+        findMatching(source, open, "(", ")");
 
     const parts =
         source.slice(open + 1, close).split(";");
@@ -1009,41 +1015,61 @@ function parseFor(source, pos, variables){
     const condition = parts[1].trim();
     const update = parts[2].trim();
 
+    /* 初期化 */
     if(init){
-        executeStatements(init.endsWith(";") ? init : init + ";", variables);
+
+        if(
+            /^(int|double|boolean|char|String)\s+/.test(init)
+        ){
+            executeStatements(
+                init.endsWith(";") ? init : init + ";",
+                variables
+            );
+        }
+        else{
+            executeStatements(
+                init.endsWith(";") ? init : init + ";",
+                variables
+            );
+        }
     }
 
     let cursor = close + 1;
-    while(/\s/.test(source[cursor] || "")) cursor++;
+
+    while(/\s/.test(source[cursor] || "")){
+        cursor++;
+    }
 
     if(source[cursor] !== "{"){
         throw new Error("error: '{' expected");
     }
 
-    const blockEnd = findMatching(source, cursor, "{", "}");
-    const block = source.slice(cursor + 1, blockEnd);
+    const blockEnd =
+        findMatching(source, cursor, "{", "}");
+
+    const block =
+        source.slice(cursor + 1, blockEnd);
 
     let output = "";
-    let guard = 0;
+    let count = 0;
 
     while(evaluateExpression(condition, variables)){
 
-        output += executeStatements(block, variables);
+        output +=
+            executeStatements(block, variables);
 
-        executeStatements(
-            update.endsWith(";") ? update : update + ";",
-            variables
-        );
+        executeUpdate(update, variables);
 
-        guard++;
-        if(guard > 1000){
+        count++;
+
+        if(count > 1000){
             throw new Error("error: loop limit exceeded");
         }
     }
 
     return {
-        output:output,
-        pos:blockEnd + 1
+        output: output,
+        pos: blockEnd + 1
     };
 }
 
