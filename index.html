@@ -484,7 +484,6 @@ body{
 <script>
 function setMessage(title, paragraphs){
     const mainMessage = document.getElementById("mainMessage");
-
     mainMessage.innerHTML =
         "<h2>" + title + "</h2>" +
         paragraphs.map(function(text){
@@ -494,161 +493,772 @@ function setMessage(title, paragraphs){
 
 function showResult(text, isError){
     const result = document.getElementById("result");
-
     result.className =
         "code-box " + (isError ? "error-bubble" : "success-bubble");
-
     result.textContent = text;
 }
 
+/*
+ * Java体験用の簡易実行エンジン
+ *
+ * 対応する基本機能
+ * ・System.out.print / println
+ * ・String / char / int / double / boolean の変数宣言
+ * ・変数を使ったprint / println
+ * ・if / else
+ * ・for
+ * ・while
+ * ・switch / case / break / default
+ *
+ * ※本物のJavaコンパイラではなく、初心者向けの体験用です。
+ */
+
 function runJava(){
 
-    const rawCode =
-        document.getElementById("codeInput").value;
+    const textarea = document.getElementById("codeInput");
+    const rawCode = textarea.value;
+    const code = rawCode.trim();
 
-    const code =
-        rawCode.trim();
-
-    /* 正しい print / println */
-    const match =
-        code.match(/^System\.out\.print(ln)?\("([^"]*)"\);$/);
-
-    if(match){
-
-        const text = match[2];
-
-        showResult(text, false);
-
-        setMessage(
-            "できたよ！",
-            [
-                "Javaさんが君の文章を読んで、",
-                "「" + text + "」",
-                "を返してくれたよ！",
-                "\" \" の中に書いた言葉が表示されるんだ。",
-                "println は表示したあとに改行するよ。",
-                "print は改行しないで表示するんだ。"
-            ]
-        );
-
+    if(!code){
+        showResult("", false);
+        setMessage("コードを書いてみよう！", [
+            "Javaのコードをノートに書いて、",
+            "「実行」してみよう！"
+        ]);
         return;
     }
 
-    /* ; がない */
-    if(code.match(/^System\.out\.print(ln)?\(".*"\)$/)){
-
-        showResult("error: ';' expected", true);
-
-        setMessage(
-            "もう少し！",
-            [
-                "文の最後に ; が見つからないみたい。",
-                "Javaでは文の最後に ; が必要なんだ。",
-                "最後に ; をつけてみよう！"
-            ]
-        );
-
-        return;
-    }
-
-    /* 全角・日本語の引用符 */
+    /* 全角引用符のチェック */
     if(
         code.includes("“") ||
         code.includes("”") ||
         code.includes("「") ||
         code.includes("」")
     ){
-
         showResult("error: illegal character", true);
-
-        setMessage(
-            "引用符を確認してみよう！",
-            [
-                "全角の引用符が使われているみたい。",
-                "Javaでは半角の \" を使うよ。",
-                "\"こんにちは\" のように囲んでみよう！"
-            ]
-        );
-
+        setMessage("引用符を確認してみよう！", [
+            "Javaでは半角の \" と ' を使うよ。",
+            "\"こんにちは\" や 'A' のように書いてみよう！"
+        ]);
         return;
     }
 
-    /* 括弧の組み合わせ */
-    const openCount =
-        (code.match(/\(/g) || []).length;
+    try{
+        const variables = {};
+        const output = executeJavaBlock(code, variables);
 
-    const closeCount =
-        (code.match(/\)/g) || []).length;
+        showResult(output, false);
 
-    if(
-        code.includes("System.out.") &&
-        openCount !== closeCount
-    ){
+        setMessage("できたよ！", [
+            "Javaさんがコードを読んで、",
+            "実行結果を返してくれたよ！",
+            "変数や条件分岐、繰り返しも体験できるよ。"
+        ]);
 
-        showResult("error: ')' expected", true);
+    }catch(error){
 
-        setMessage(
-            "カッコを確認してみよう！",
-            [
-                "( と ) はペアで必要なんだよ。",
-                "開くカッコと閉じるカッコが",
-                "同じ数になっているか確認してみよう！"
-            ]
-        );
+        showResult(error.message, true);
 
-        return;
+        setMessage("もう少し！", [
+            error.message,
+            "Javaの書き方を確認して、もう一度実行してみよう。"
+        ]);
     }
-
-    /* 文字列の \" がない */
-    if(
-        code.match(/^System\.out\.print(ln)?\([^)]+\);$/)
-    ){
-
-        showResult("error: cannot find symbol", true);
-
-        setMessage(
-            "文字を囲んでみよう！",
-            [
-                "文字を表示したいときは、",
-                "\"こんにちは\" のように",
-                "\" \" で囲むんだよ。"
-            ]
-        );
-
-        return;
-    }
-
-    /* System.out. はあるが、print / println ではない */
-    if(code.includes("System.out.")){
-
-        showResult("error: cannot find symbol", true);
-
-        setMessage(
-            "その命令はまだ知らないみたい。",
-            [
-                "Javaさんは、その命令を知らないみたい。",
-                "まずは",
-                "System.out.println(\"こんにちは\");",
-                "の形を書いてみよう！"
-            ]
-        );
-
-        return;
-    }
-
-    /* それ以外 */
-    showResult("error: invalid statement", true);
-
-    setMessage(
-        "書き方を確認してみよう！",
-        [
-            "Javaさんは、まだ読み方が分からないみたい。",
-            "まずは",
-            "System.out.println(\"こんにちは\");",
-            "の形で書いてみよう！"
-        ]
-    );
 }
+
+
+/* =========================
+   Javaコード実行
+   ========================= */
+
+function executeJavaBlock(source, variables){
+
+    let code = source.trim();
+
+    /* 末尾の ; がない基本文を検出 */
+    const lines = code.split(/\r?\n/);
+
+    for(let i = 0; i < lines.length; i++){
+        const line = lines[i].trim();
+
+        if(
+            line &&
+            !line.endsWith("{") &&
+            !line.endsWith("}") &&
+            !line.endsWith(";") &&
+            !line.startsWith("//")
+        ){
+            if(
+                !line.startsWith("if") &&
+                !line.startsWith("for") &&
+                !line.startsWith("while") &&
+                !line.startsWith("switch") &&
+                !line.startsWith("else")
+            ){
+                throw new Error("error: ';' expected");
+            }
+        }
+    }
+
+    return executeStatements(code, variables);
+}
+
+
+function executeStatements(source, variables){
+
+    let output = "";
+    let pos = 0;
+
+    while(pos < source.length){
+
+        while(pos < source.length && /\s/.test(source[pos])){
+            pos++;
+        }
+
+        if(pos >= source.length){
+            break;
+        }
+
+        /* コメント */
+        if(source.startsWith("//", pos)){
+            const end = source.indexOf("\n", pos);
+            pos = end === -1 ? source.length : end + 1;
+            continue;
+        }
+
+        /* if */
+        if(source.startsWith("if", pos) && /\s|\(/.test(source[pos + 2])){
+            const result = parseIf(source, pos, variables);
+            output += result.output;
+            pos = result.pos;
+            continue;
+        }
+
+        /* for */
+        if(source.startsWith("for", pos) && /\s|\(/.test(source[pos + 3])){
+            const result = parseFor(source, pos, variables);
+            output += result.output;
+            pos = result.pos;
+            continue;
+        }
+
+        /* while */
+        if(source.startsWith("while", pos) && /\s|\(/.test(source[pos + 5])){
+            const result = parseWhile(source, pos, variables);
+            output += result.output;
+            pos = result.pos;
+            continue;
+        }
+
+        /* switch */
+        if(source.startsWith("switch", pos) && /\s|\(/.test(source[pos + 6])){
+            const result = parseSwitch(source, pos, variables);
+            output += result.output;
+            pos = result.pos;
+            continue;
+        }
+
+        /* 変数宣言 */
+        const declaration =
+            source.slice(pos).match(
+                /^(int|double|boolean|char|String)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([^;]+);/
+            );
+
+        if(declaration){
+
+            const type = declaration[1];
+            const name = declaration[2];
+            const valueText = declaration[3].trim();
+
+            variables[name] = {
+                type:type,
+                value:parseValue(valueText, variables, type)
+            };
+
+            pos += declaration[0].length;
+            continue;
+        }
+
+        /* 変数への代入 */
+        const assignment =
+            source.slice(pos).match(
+                /^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([^;]+);/
+            );
+
+        if(assignment){
+
+            const name = assignment[1];
+
+            if(!variables[name]){
+                throw new Error("error: cannot find symbol: " + name);
+            }
+
+            variables[name].value =
+                parseValue(
+                    assignment[2].trim(),
+                    variables,
+                    variables[name].type
+                );
+
+            pos += assignment[0].length;
+            continue;
+        }
+
+        /* print / println */
+        const printMatch =
+            source.slice(pos).match(
+                /^System\.out\.(print|println)\s*\(([\s\S]*?)\)\s*;/
+            );
+
+        if(printMatch){
+
+            const command = printMatch[1];
+            const expression = printMatch[2].trim();
+
+            const value = evaluateExpression(expression, variables);
+
+            output += String(value);
+
+            if(command === "println"){
+                output += "\n";
+            }
+
+            pos += printMatch[0].length;
+            continue;
+        }
+
+        /* 単独の } は呼び出し側で処理する */
+        if(source[pos] === "}"){
+            break;
+        }
+
+        throw new Error("error: invalid statement");
+    }
+
+    return output;
+}
+
+
+/* =========================
+   値の解析
+   ========================= */
+
+function parseValue(text, variables, expectedType){
+
+    let value = evaluateExpression(text, variables);
+
+    switch(expectedType){
+
+        case "int":
+            if(!Number.isInteger(value)){
+                throw new Error("error: incompatible types");
+            }
+            break;
+
+        case "double":
+            if(typeof value !== "number"){
+                throw new Error("error: incompatible types");
+            }
+            break;
+
+        case "boolean":
+            if(typeof value !== "boolean"){
+                throw new Error("error: incompatible types");
+            }
+            break;
+
+        case "char":
+            if(typeof value !== "string" || value.length !== 1){
+                throw new Error("error: incompatible types");
+            }
+            break;
+
+        case "String":
+            if(typeof value !== "string"){
+                throw new Error("error: incompatible types");
+            }
+            break;
+    }
+
+    return value;
+}
+
+
+function evaluateExpression(expression, variables){
+
+    const text = expression.trim();
+
+    /* String */
+    if(/^"(?:[^"\\]|\\.)*"$/.test(text)){
+        return text.slice(1, -1)
+            .replace(/\\"/g, '"')
+            .replace(/\\n/g, "\n");
+    }
+
+    /* char */
+    if(/^'(?:[^'\\]|\\.)'$/.test(text)){
+        return text.slice(1, -1);
+    }
+
+    /* boolean */
+    if(text === "true") return true;
+    if(text === "false") return false;
+
+    /* 整数 */
+    if(/^-?\d+$/.test(text)){
+        return Number(text);
+    }
+
+    /* double */
+    if(/^-?\d+\.\d+$/.test(text)){
+        return Number(text);
+    }
+
+    /* 変数 */
+    if(/^[A-Za-z_][A-Za-z0-9_]*$/.test(text)){
+        if(!variables[text]){
+            throw new Error("error: cannot find symbol: " + text);
+        }
+        return variables[text].value;
+    }
+
+    /* == */
+    const eq = splitOnce(text, "==");
+    if(eq){
+        return evaluateExpression(eq[0], variables) ===
+               evaluateExpression(eq[1], variables);
+    }
+
+    /* != */
+    const neq = splitOnce(text, "!=");
+    if(neq){
+        return evaluateExpression(neq[0], variables) !==
+               evaluateExpression(neq[1], variables);
+    }
+
+    /* < */
+    const lt = splitOnce(text, "<");
+    if(lt){
+        return evaluateExpression(lt[0], variables) <
+               evaluateExpression(lt[1], variables);
+    }
+
+    /* > */
+    const gt = splitOnce(text, ">");
+    if(gt){
+        return evaluateExpression(gt[0], variables) >
+               evaluateExpression(gt[1], variables);
+    }
+
+    /* + */
+    const plus = splitOnce(text, "+");
+    if(plus){
+        return evaluateExpression(plus[0], variables) +
+               evaluateExpression(plus[1], variables);
+    }
+
+    throw new Error("error: cannot evaluate expression");
+}
+
+
+function splitOnce(text, operator){
+
+    const index = text.indexOf(operator);
+
+    if(index === -1){
+        return null;
+    }
+
+    return [
+        text.slice(0, index).trim(),
+        text.slice(index + operator.length).trim()
+    ];
+}
+
+
+/* =========================
+   if / else
+   ========================= */
+
+function parseIf(source, pos, variables){
+
+    const open = source.indexOf("(", pos);
+    if(open === -1) throw new Error("error: '(' expected");
+
+    const close = findMatching(source, open, "(", ")");
+
+    const condition =
+        source.slice(open + 1, close);
+
+    let cursor = close + 1;
+
+    while(/\s/.test(source[cursor] || "")) cursor++;
+
+    if(source[cursor] !== "{"){
+        throw new Error("error: '{' expected");
+    }
+
+    const blockEnd = findMatching(source, cursor, "{", "}");
+
+    const trueBlock =
+        source.slice(cursor + 1, blockEnd);
+
+    let nextPos = blockEnd + 1;
+    let falseBlock = null;
+
+    while(/\s/.test(source[nextPos] || "")) nextPos++;
+
+    if(source.startsWith("else", nextPos)){
+
+        nextPos += 4;
+
+        while(/\s/.test(source[nextPos] || "")) nextPos++;
+
+        if(source[nextPos] !== "{"){
+            throw new Error("error: '{' expected");
+        }
+
+        const elseEnd =
+            findMatching(source, nextPos, "{", "}");
+
+        falseBlock =
+            source.slice(nextPos + 1, elseEnd);
+
+        nextPos = elseEnd + 1;
+    }
+
+    const result =
+        evaluateExpression(condition, variables)
+        ? executeStatements(trueBlock, variables)
+        : (falseBlock !== null
+            ? executeStatements(falseBlock, variables)
+            : "");
+
+    return {
+        output:result,
+        pos:nextPos
+    };
+}
+
+
+/* =========================
+   for
+   ========================= */
+
+function parseFor(source, pos, variables){
+
+    const open = source.indexOf("(", pos);
+    const close = findMatching(source, open, "(", ")");
+
+    const parts =
+        source.slice(open + 1, close).split(";");
+
+    if(parts.length !== 3){
+        throw new Error("error: invalid for statement");
+    }
+
+    const init = parts[0].trim();
+    const condition = parts[1].trim();
+    const update = parts[2].trim();
+
+    if(init){
+        executeStatements(init.endsWith(";") ? init : init + ";", variables);
+    }
+
+    let cursor = close + 1;
+    while(/\s/.test(source[cursor] || "")) cursor++;
+
+    if(source[cursor] !== "{"){
+        throw new Error("error: '{' expected");
+    }
+
+    const blockEnd = findMatching(source, cursor, "{", "}");
+    const block = source.slice(cursor + 1, blockEnd);
+
+    let output = "";
+    let guard = 0;
+
+    while(evaluateExpression(condition, variables)){
+
+        output += executeStatements(block, variables);
+
+        executeStatements(
+            update.endsWith(";") ? update : update + ";",
+            variables
+        );
+
+        guard++;
+        if(guard > 1000){
+            throw new Error("error: loop limit exceeded");
+        }
+    }
+
+    return {
+        output:output,
+        pos:blockEnd + 1
+    };
+}
+
+
+/* =========================
+   while
+   ========================= */
+
+function parseWhile(source, pos, variables){
+
+    const open = source.indexOf("(", pos);
+    const close = findMatching(source, open, "(", ")");
+
+    const condition =
+        source.slice(open + 1, close);
+
+    let cursor = close + 1;
+    while(/\s/.test(source[cursor] || "")) cursor++;
+
+    if(source[cursor] !== "{"){
+        throw new Error("error: '{' expected");
+    }
+
+    const blockEnd =
+        findMatching(source, cursor, "{", "}");
+
+    const block =
+        source.slice(cursor + 1, blockEnd);
+
+    let output = "";
+    let guard = 0;
+
+    while(evaluateExpression(condition, variables)){
+
+        output += executeStatements(block, variables);
+
+        guard++;
+        if(guard > 1000){
+            throw new Error("error: loop limit exceeded");
+        }
+    }
+
+    return {
+        output:output,
+        pos:blockEnd + 1
+    };
+}
+
+
+/* =========================
+   switch
+   ========================= */
+
+function parseSwitch(source, pos, variables){
+
+    const open = source.indexOf("(", pos);
+    const close = findMatching(source, open, "(", ")");
+
+    const switchValue =
+        evaluateExpression(
+            source.slice(open + 1, close),
+            variables
+        );
+
+    let cursor = close + 1;
+
+    while(/\s/.test(source[cursor] || "")) cursor++;
+
+    if(source[cursor] !== "{"){
+        throw new Error("error: '{' expected");
+    }
+
+    const end =
+        findMatching(source, cursor, "{", "}");
+
+    const body =
+        source.slice(cursor + 1, end);
+
+    const caseRegex =
+        /case\s+([^:]+):|default\s*:/g;
+
+    const cases = [];
+    let match;
+
+    while((match = caseRegex.exec(body)) !== null){
+
+        cases.push({
+            index:match.index,
+            value:match[1] ? match[1].trim() : null
+        });
+    }
+
+    let selected = -1;
+
+    for(let i = 0; i < cases.length; i++){
+
+        if(cases[i].value === null){
+            continue;
+        }
+
+        const caseValue =
+            evaluateExpression(cases[i].value, variables);
+
+        if(caseValue === switchValue){
+            selected = i;
+            break;
+        }
+    }
+
+    if(selected === -1){
+
+        for(let i = 0; i < cases.length; i++){
+            if(cases[i].value === null){
+                selected = i;
+                break;
+            }
+        }
+    }
+
+    if(selected === -1){
+        return {
+            output:"",
+            pos:end + 1
+        };
+    }
+
+    const start =
+        body.indexOf(":", cases[selected].index) + 1;
+
+    let stop = body.length;
+
+    for(let i = selected + 1; i < cases.length; i++){
+        stop = cases[i].index;
+        break;
+    }
+
+    let selectedBody =
+        body.slice(start, stop);
+
+    const breakIndex =
+        selectedBody.indexOf("break;");
+
+    if(breakIndex !== -1){
+        selectedBody =
+            selectedBody.slice(0, breakIndex);
+    }
+
+    return {
+        output:executeStatements(selectedBody, variables),
+        pos:end + 1
+    };
+}
+
+
+/* =========================
+   括弧検索
+   ========================= */
+
+function findMatching(text, start, openChar, closeChar){
+
+    let depth = 0;
+    let quote = null;
+
+    for(let i = start; i < text.length; i++){
+
+        const ch = text[i];
+
+        if(quote){
+
+            if(ch === "\\" && i + 1 < text.length){
+                i++;
+                continue;
+            }
+
+            if(ch === quote){
+                quote = null;
+            }
+
+            continue;
+        }
+
+        if(ch === '"' || ch === "'"){
+            quote = ch;
+            continue;
+        }
+
+        if(ch === openChar){
+            depth++;
+        }
+
+        if(ch === closeChar){
+
+            depth--;
+
+            if(depth === 0){
+                return i;
+            }
+        }
+    }
+
+    throw new Error("error: '" + closeChar + "' expected");
+}
+
+
+/* =========================
+   Tabキーで字下げ
+   ========================= */
+
+document.getElementById("codeInput").addEventListener("keydown", function(event){
+
+    if(event.key !== "Tab"){
+        return;
+    }
+
+    event.preventDefault();
+
+    const textarea = event.target;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+
+    const indent = "    ";
+
+    if(start === end){
+
+        textarea.value =
+            textarea.value.slice(0, start) +
+            indent +
+            textarea.value.slice(end);
+
+        textarea.selectionStart =
+            textarea.selectionEnd =
+            start + indent.length;
+
+        return;
+    }
+
+    /* 複数行選択時は全行をインデント */
+    const selected =
+        textarea.value.slice(start, end);
+
+    const before =
+        textarea.value.slice(0, start);
+
+    const lineStart =
+        before.lastIndexOf("\n") + 1;
+
+    const block =
+        textarea.value.slice(lineStart, end);
+
+    const indented =
+        block.replace(/^/gm, indent);
+
+    textarea.value =
+        textarea.value.slice(0, lineStart) +
+        indented +
+        textarea.value.slice(end);
+
+    textarea.selectionStart =
+        lineStart;
+
+    textarea.selectionEnd =
+        lineStart + indented.length;
+});
 </script>
 
 </body>
