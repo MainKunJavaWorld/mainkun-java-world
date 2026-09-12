@@ -880,65 +880,118 @@ function splitOnce(text, operator){
 /* =========================
    if / else
    ========================= */
-
 function parseIf(source, pos, variables){
 
-    const open = source.indexOf("(", pos);
-    if(open === -1) throw new Error("error: '(' expected");
+    let cursor = pos;
+    let output = "";
+    let executed = false;
 
-    const close = findMatching(source, open, "(", ")");
+    while(true){
 
-    const condition =
-        source.slice(open + 1, close);
+        while(/\s/.test(source[cursor] || "")){
+            cursor++;
+        }
 
-    let cursor = close + 1;
+        let isElseIf = false;
 
-    while(/\s/.test(source[cursor] || "")) cursor++;
+        if(source.startsWith("if", cursor)){
+            cursor += 2;
+        }
+        else if(source.startsWith("else", cursor)){
 
-    if(source[cursor] !== "{"){
-        throw new Error("error: '{' expected");
-    }
+            cursor += 4;
 
-    const blockEnd = findMatching(source, cursor, "{", "}");
+            while(/\s/.test(source[cursor] || "")){
+                cursor++;
+            }
 
-    const trueBlock =
-        source.slice(cursor + 1, blockEnd);
+            if(source.startsWith("if", cursor)){
+                cursor += 2;
+                isElseIf = true;
+            }
+            else{
 
-    let nextPos = blockEnd + 1;
-    let falseBlock = null;
+                while(/\s/.test(source[cursor] || "")){
+                    cursor++;
+                }
 
-    while(/\s/.test(source[nextPos] || "")) nextPos++;
+                if(source[cursor] !== "{"){
+                    throw new Error("error: '{' expected");
+                }
 
-    if(source.startsWith("else", nextPos)){
+                const elseEnd =
+                    findMatching(source, cursor, "{", "}");
 
-        nextPos += 4;
+                const elseBlock =
+                    source.slice(cursor + 1, elseEnd);
 
-        while(/\s/.test(source[nextPos] || "")) nextPos++;
+                if(!executed){
+                    output =
+                        executeStatements(elseBlock, variables);
+                }
 
-        if(source[nextPos] !== "{"){
+                return {
+                    output: output,
+                    pos: elseEnd + 1
+                };
+            }
+        }
+        else{
+            throw new Error("error: 'if' expected");
+        }
+
+        while(/\s/.test(source[cursor] || "")){
+            cursor++;
+        }
+
+        if(source[cursor] !== "("){
+            throw new Error("error: '(' expected");
+        }
+
+        const conditionEnd =
+            findMatching(source, cursor, "(", ")");
+
+        const condition =
+            source.slice(cursor + 1, conditionEnd);
+
+        cursor = conditionEnd + 1;
+
+        while(/\s/.test(source[cursor] || "")){
+            cursor++;
+        }
+
+        if(source[cursor] !== "{"){
             throw new Error("error: '{' expected");
         }
 
-        const elseEnd =
-            findMatching(source, nextPos, "{", "}");
+        const blockEnd =
+            findMatching(source, cursor, "{", "}");
 
-        falseBlock =
-            source.slice(nextPos + 1, elseEnd);
+        const block =
+            source.slice(cursor + 1, blockEnd);
 
-        nextPos = elseEnd + 1;
+        if(!executed &&
+           evaluateExpression(condition, variables)){
+
+            output =
+                executeStatements(block, variables);
+
+            executed = true;
+        }
+
+        cursor = blockEnd + 1;
+
+        while(/\s/.test(source[cursor] || "")){
+            cursor++;
+        }
+
+        if(!source.startsWith("else", cursor)){
+            return {
+                output: output,
+                pos: cursor
+            };
+        }
     }
-
-    const result =
-        evaluateExpression(condition, variables)
-        ? executeStatements(trueBlock, variables)
-        : (falseBlock !== null
-            ? executeStatements(falseBlock, variables)
-            : "");
-
-    return {
-        output:result,
-        pos:nextPos
-    };
 }
 
 
